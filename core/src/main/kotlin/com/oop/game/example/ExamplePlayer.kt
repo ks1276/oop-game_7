@@ -44,8 +44,14 @@ class ExamplePlayer(
         private set  // 외부는 읽기만 가능, takeDamage() 를 통해서만 감소 가능
 
     private val maxHp = 3  // 최대 체력 (회복 아이템이 초과하면 clamping)
+    private val invincibleDuration = 1.2f
+    private var invincibleTimer = 0f
 
     override fun update(delta: Float) {
+        if (invincibleTimer > 0f) {
+            invincibleTimer = (invincibleTimer - delta).coerceAtLeast(0f)
+        }
+
         if (InputHandler.isKeyPressed(InputHandler.LEFT))  x -= speed * delta
         if (InputHandler.isKeyPressed(InputHandler.RIGHT)) x += speed * delta
         if (InputHandler.isKeyPressed(InputHandler.UP))    y += speed * delta
@@ -64,7 +70,11 @@ class ExamplePlayer(
      *   원본 이미지가 30x30 이고 w=30, h=30 이면 1:1 그대로 그려진다.
      */
     override fun draw(batch: SpriteBatch) {
+        if (isInvincible() && ((invincibleTimer * 10).toInt() % 2 == 0)) {
+            batch.setColor(1f, 1f, 1f, 0.35f)
+        }
         batch.draw(texture, x, y, width, height)
+        batch.setColor(1f, 1f, 1f, 1f)
     }
 
     /** GPU 자원 정리 — 화면이 닫힐 때 GameWorld 가 호출. */
@@ -76,10 +86,13 @@ class ExamplePlayer(
      * 데미지를 입는다 — hp 를 1 감소.
      * hp 가 0 이하가 되지 않도록 보호한다.
      */
-    fun takeDamage() {
-        if (hp > 0) {
+    fun takeDamage(): Boolean {
+        if (hp > 0 && !isInvincible()) {
             hp--
+            invincibleTimer = invincibleDuration
+            return true
         }
+        return false
     }
 
     /**
@@ -96,4 +109,6 @@ class ExamplePlayer(
      * 플레이어가 살아있는지 확인 — hp > 0 일 때만 살아있음.
      */
     override fun isAlive(): Boolean = hp > 0
+
+    fun isInvincible(): Boolean = invincibleTimer > 0f
 }

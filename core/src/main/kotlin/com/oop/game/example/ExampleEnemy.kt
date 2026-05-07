@@ -35,6 +35,7 @@ class ExampleEnemy(
     private val texture = Texture(Gdx.files.internal("enemy.png"))
 
     private val speed = 150f
+    private var hp = 1
 
     // 현재 진행 방향 — +1 이면 오른쪽, -1 이면 왼쪽.
     //   var 로 선언한 이유: 경계에서 반대로 뒤집혀야 하므로 값이 변함.
@@ -62,6 +63,12 @@ class ExampleEnemy(
     override fun draw(batch: SpriteBatch) {
         batch.draw(texture, x, y, width, height)
     }
+
+    fun takeDamage() {
+        hp--
+    }
+
+    override fun isAlive(): Boolean = hp > 0
 
     override fun dispose() {
         texture.dispose()

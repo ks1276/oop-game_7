@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.oop.game.GameWorld
 import com.oop.game.InputHandler
 import kotlin.math.floor
+import kotlin.random.Random
 
 /**
  * ════════════════════════════════════════════════════════════
@@ -63,7 +64,8 @@ class ExampleWorld(
      */
     private enum class GameState {
         IN_PLAY,
-        GAME_OVER
+        GAME_OVER,
+        VICTORY
     }
 
     // 플레이어 — 월드 중앙 하단에서 시작.
@@ -76,7 +78,7 @@ class ExampleWorld(
     )
 
     // 여러 개의 적들 — 다양한 높이와 위치에서 왕복
-    private val enemies = listOf(
+    private val enemies = mutableListOf(
         ExampleEnemy(x = 100f, y = worldHeight - 100f, minX = 0f, maxX = worldWidth),
         ExampleEnemy(x = 300f, y = worldHeight - 200f, minX = 0f, maxX = worldWidth),
         ExampleEnemy(x = 500f, y = worldHeight - 150f, minX = 0f, maxX = worldWidth),
@@ -89,6 +91,13 @@ class ExampleWorld(
         HealthItem(x = 600f, y = worldHeight - 400f),
         HealthItem(x = 400f, y = worldHeight - 500f)
     )
+
+    private val coins = mutableListOf<Coin>()
+    private val bullets = mutableListOf<Bullet>()
+    private val targetCoinCount = 100
+    private var coinCount = 0
+    private var coinSpawnTimer = 0f
+    private val coinSpawnInterval = 0.25f
 
     // 현재 게임 상태 — 입력/충돌에 따라 IN_PLAY ↔ GAME_OVER 로 전환된다.
     private var state = GameState.IN_PLAY
@@ -132,6 +141,7 @@ class ExampleWorld(
         when (state) {
             GameState.IN_PLAY -> updateInPlay(delta)
             GameState.GAME_OVER -> updateGameOver()
+            GameState.VICTORY -> updateVictory()
         }
     }
 
@@ -152,6 +162,8 @@ class ExampleWorld(
         offsetY = offsetY.coerceIn(0f, worldHeight - screenHeight)
 
         // ── 1) 게임 객체 갱신 — 각자 한 프레임씩 진행 ──
+        fireBullet()
+        spawnCoins(delta)
         updateAllObjects(delta)
 
         // ── 2) 충돌 감시 ──
@@ -164,6 +176,28 @@ class ExampleWorld(
         }
 
         // 2-2) 회복 아이템과의 충돌 — hp 1씩 회복, 아이템 제거
+        val bulletsToRemove = mutableListOf<Bullet>()
+        val enemiesToRemove = mutableListOf<ExampleEnemy>()
+        for (bullet in bullets) {
+            for (enemy in enemies) {
+                if (bullet.collidesWith(enemy)) {
+                    bullet.markHit()
+                    enemy.takeDamage()
+                    bulletsToRemove.add(bullet)
+                    if (!enemy.isAlive()) {
+                        enemiesToRemove.add(enemy)
+                    }
+                    break
+                }
+            }
+        }
+        for (bullet in bulletsToRemove) {
+            remove(bullet)
+        }
+        for (enemy in enemiesToRemove) {
+            remove(enemy)
+        }
+
         val itemsToRemove = mutableListOf<HealthItem>()
         for (item in healthItems) {
             if (player.collidesWith(item)) {
@@ -175,6 +209,21 @@ class ExampleWorld(
             remove(item)
         }
 
+        val coinsToCollect = mutableListOf<Coin>()
+        for (coin in coins) {
+            if (player.collidesWith(coin)) {
+                coinsToCollect.add(coin)
+            }
+        }
+        for (coin in coinsToCollect) {
+            coin.collect()
+            coinCount++
+        }
+        if (coinCount >= targetCoinCount) {
+            coinCount = targetCoinCount
+            state = GameState.VICTORY
+        }
+
         // 2-3) 플레이어의 hp 체크 — 0이 되면 게임 오버
         if (!player.isAlive()) {
             state = GameState.GAME_OVER
@@ -184,12 +233,46 @@ class ExampleWorld(
         //   현재 예제에선 아무 것도 안 죽으므로 영향 없지만,
         //   bullet/enemy 가 추가될 때를 대비한 표준 흐름이다.
         removeDead()
+        coins.removeAll { !it.isAlive() }
+        bullets.removeAll { !it.isAlive() }
+        enemies.removeAll { !it.isAlive() }
+    }
+
+    private fun fireBullet() {
+        if (InputHandler.isKeyJustPressed(InputHandler.SPACE)) {
+            val bullet = Bullet(
+                x = player.x + player.width / 2f - 4f,
+                y = player.y + player.height,
+                worldHeight = worldHeight
+            )
+            bullets.add(bullet)
+            add(bullet)
+        }
+    }
+
+    private fun spawnCoins(delta: Float) {
+        coinSpawnTimer += delta
+        while (coinSpawnTimer >= coinSpawnInterval) {
+            coinSpawnTimer -= coinSpawnInterval
+            val coin = Coin(
+                x = Random.nextFloat() * (worldWidth - 18f),
+                y = worldHeight
+            )
+            coins.add(coin)
+            add(coin)
+        }
     }
 
     /** GAME_OVER 상태에서 매 프레임 처리 — ESC 입력만 감시한다. */
     private fun updateGameOver() {
         // ESC 키가 '막 눌린 순간' 앱 종료.
         //   isKeyJustPressed 로 한 이유: 누르고 있는 동안 매 프레임 exit 호출되지 않게.
+        if (InputHandler.isKeyJustPressed(InputHandler.ESCAPE)) {
+            Gdx.app.exit()
+        }
+    }
+
+    private fun updateVictory() {
         if (InputHandler.isKeyJustPressed(InputHandler.ESCAPE)) {
             Gdx.app.exit()
         }
@@ -254,6 +337,7 @@ class ExampleWorld(
                 // 플레이 중에는 추가로 그릴 것 없음
             }
             GameState.GAME_OVER -> drawGameOverOverlay()
+            GameState.VICTORY -> drawVictoryOverlay()
         }
     }
 
@@ -271,6 +355,14 @@ class ExampleWorld(
 
         // 2) 월드 텍스트 (월드 좌표) — 월드 정중앙에 "WORLD CENTER".
         //    WASD 로 카메라를 움직이면 이 글자도 화면에서 움직인다.
+        drawTextOnScreen(
+            text = "Coins: $coinCount / $targetCoinCount",
+            x = 10f,
+            y = screenHeight - 35f,
+            color = Color.GOLD,
+            scale = 1.2f
+        )
+
         drawTextInWorld(
             text = "WORLD CENTER",
             worldX = worldWidth / 2 - 70f,
@@ -299,6 +391,30 @@ class ExampleWorld(
     }
 
     /** 화면이 닫힐 때 — 부모도 dispose 한 뒤 우리만의 자원도 해제. */
+    private fun drawVictoryOverlay() {
+        drawTextOnScreen(
+            text = "Victory!",
+            x = screenWidth / 2 - 70f,
+            y = screenHeight / 2,
+            color = Color.GOLD,
+            scale = 2f
+        )
+        drawTextOnScreen(
+            text = "Collected 100 coins",
+            x = screenWidth / 2 - 95f,
+            y = screenHeight / 2 - 40f,
+            color = Color.WHITE,
+            scale = 1f
+        )
+        drawTextOnScreen(
+            text = "Press ESC to exit",
+            x = screenWidth / 2 - 70f,
+            y = screenHeight / 2 - 70f,
+            color = Color.WHITE,
+            scale = 1f
+        )
+    }
+
     override fun dispose() {
         super.dispose()
         tileTexture.dispose()
