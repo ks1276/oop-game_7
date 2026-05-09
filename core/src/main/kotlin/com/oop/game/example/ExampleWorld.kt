@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.oop.game.GameWorld
 import com.oop.game.InputHandler
 import kotlin.math.floor
-import kotlin.random.Random
 
 /**
  * ════════════════════════════════════════════════════════════
@@ -92,12 +91,10 @@ class ExampleWorld(
         HealthItem(x = 400f, y = worldHeight - 500f)
     )
 
-    private val coins = mutableListOf<Coin>()
+    private val coin = Coin(worldWidth, worldHeight)
     private val bullets = mutableListOf<Bullet>()
     private val targetCoinCount = 100
     private var coinCount = 0
-    private var coinSpawnTimer = 0f
-    private val coinSpawnInterval = 0.25f
 
     // 현재 게임 상태 — 입력/충돌에 따라 IN_PLAY ↔ GAME_OVER 로 전환된다.
     private var state = GameState.IN_PLAY
@@ -127,6 +124,7 @@ class ExampleWorld(
         for (item in healthItems) {
             add(item)
         }
+        add(coin)
     }
 
     /**
@@ -163,7 +161,6 @@ class ExampleWorld(
 
         // ── 1) 게임 객체 갱신 — 각자 한 프레임씩 진행 ──
         fireBullet()
-        spawnCoins(delta)
         updateAllObjects(delta)
 
         // ── 2) 충돌 감시 ──
@@ -209,15 +206,9 @@ class ExampleWorld(
             remove(item)
         }
 
-        val coinsToCollect = mutableListOf<Coin>()
-        for (coin in coins) {
-            if (player.collidesWith(coin)) {
-                coinsToCollect.add(coin)
-            }
-        }
-        for (coin in coinsToCollect) {
-            coin.collect()
-            coinCount++
+        if (player.collidesWith(coin)) {
+            coinCount += coin.getScore()
+            coin.randomRespawn(worldWidth, worldHeight)
         }
         if (coinCount >= targetCoinCount) {
             coinCount = targetCoinCount
@@ -233,33 +224,21 @@ class ExampleWorld(
         //   현재 예제에선 아무 것도 안 죽으므로 영향 없지만,
         //   bullet/enemy 가 추가될 때를 대비한 표준 흐름이다.
         removeDead()
-        coins.removeAll { !it.isAlive() }
         bullets.removeAll { !it.isAlive() }
         enemies.removeAll { !it.isAlive() }
     }
 
     private fun fireBullet() {
         if (InputHandler.isKeyJustPressed(InputHandler.SPACE)) {
+            val bulletX = player.x + (player.width / 2) - 7.5f
+            val bulletY = player.y + player.height
             val bullet = Bullet(
-                x = player.x + player.width / 2f - 4f,
-                y = player.y + player.height,
+                x = bulletX,
+                y = bulletY,
                 worldHeight = worldHeight
             )
             bullets.add(bullet)
             add(bullet)
-        }
-    }
-
-    private fun spawnCoins(delta: Float) {
-        coinSpawnTimer += delta
-        while (coinSpawnTimer >= coinSpawnInterval) {
-            coinSpawnTimer -= coinSpawnInterval
-            val coin = Coin(
-                x = Random.nextFloat() * (worldWidth - 18f),
-                y = worldHeight
-            )
-            coins.add(coin)
-            add(coin)
         }
     }
 
