@@ -5,12 +5,6 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.oop.game.GameObject
 
-/**
- * Health item that restores player HP when collected.
- *
- * @param x world X coordinate
- * @param y world Y coordinate
- */
 class HealthItem(
     x: Float,
     y: Float
