@@ -10,7 +10,8 @@ import com.oop.game.GameObject // GameObject가 다른 패키지에 있다면 im
  */
 class Bullet(
     startX: Float,
-    startY: Float
+    startY: Float,
+    private val worldHeight: Float
 ) : GameObject(
     x = startX,
     y = startY,
@@ -19,7 +20,7 @@ class Bullet(
 ) {
 
     // 1. 이미지 로딩: assets 폴더에 있는 "bullet.png"를 불러옵니다.
-    private val texture = Texture(Gdx.files.internal("bullet.png"))
+    private val texture = Texture(Gdx.files.internal("tile.png"))
 
     // 총알이 날아가는 속도 (초당 600 픽셀)
     private val speed = 600f
@@ -37,7 +38,11 @@ class Bullet(
     // 4. 생존 여부 (메모리 최적화): 총알이 화면 위쪽 밖으로 나가면 없애줍니다.
     override fun isAlive(): Boolean {
         // 현재 y 좌표가 화면 전체 높이보다 작을 때만 살아있음(true)
-        return y < Gdx.graphics.height
+        return y < worldHeight
+    }
+
+    fun markHit() {
+        y = worldHeight
     }
 
     // 5. 자원 해제: 총알이 사라질 때 이미지(Texture) 메모리도 같이 비워줍니다.

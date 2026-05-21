@@ -233,8 +233,8 @@ class ExampleWorld(
             val bulletX = player.x + (player.width / 2) - 7.5f
             val bulletY = player.y + player.height
             val bullet = Bullet(
-                x = bulletX,
-                y = bulletY,
+                startX = bulletX,
+                startY = bulletY,
                 worldHeight = worldHeight
             )
             bullets.add(bullet)

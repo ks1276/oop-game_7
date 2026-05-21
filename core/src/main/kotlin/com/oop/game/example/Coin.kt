@@ -1,10 +1,9 @@
-package com.oop.game
+package com.oop.game.example
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Rectangle
 import com.oop.game.GameObject
 
 class Coin(
@@ -16,14 +15,12 @@ class Coin(
     width = 15f,
     height = 15f
 ) {
-    private val texture = Texture(Gdx.files.internal("coin.png"))
+    private val texture = Texture(Gdx.files.internal("Coin.png"))
+
+    override fun update(delta: Float) {}
 
     override fun draw(batch: SpriteBatch) {
         batch.draw(texture, x, y, width, height)
-    }
-
-    override fun getBounds(): Rectangle {
-        return Rectangle(x, y, width, height)
     }
 
     fun randomRespawn(worldWidth: Float, worldHeight: Float) {
