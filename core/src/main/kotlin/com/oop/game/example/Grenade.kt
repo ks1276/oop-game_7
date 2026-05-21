@@ -10,9 +10,9 @@ import com.badlogic.gdx.Gdx
 import com.oop.game.GameObject
 // 수류탄의 상태 enum class 로 표현
 enum class GrenadeState {
-    FLYING,     // 날아가는 중
-    EXPLODING,  // 폭발 중 (충돌 발생시)
-    DONE        // 소멸
+    FLYING, // 날아가는 중
+    EXPLODING, // 폭발 중 (충돌 발생시)
+    DONE // 소멸
 }
 
 // 수류탄
@@ -20,7 +20,7 @@ class Grenade(
     startX: Float,
     startY: Float,
     private val velocityX: Float, // x축 이동 속도
-    private val velocityY: Float  // y축 이동 속도
+    private val velocityY: Float // y축 이동 속도
 ) : GameObject(startX, startY, 16f, 16f) {
 
     // 수류탄 던져서 날고 있는 상태임
@@ -30,7 +30,7 @@ class Grenade(
     private var timeAlive = 0f
     private val fuseTime = 1.5f  // 폭발까지 시간
     private val explosionDuration = 0.1f // 폭발지속시간
-    private val explosionSize = 150f     // 폭발 시 충돌 범위 (가로세로 150 픽셀)
+    private val explosionSize = 150f // 폭발 시 충돌 범위 (가로세로 150 픽셀)
 
     // 수류탄 그림과 폭발시 그림 코드
     private val grenadeTexture = Texture(Gdx.files.internal("grenade.png"))
@@ -43,7 +43,7 @@ class Grenade(
 
         when (state) {
             GrenadeState.FLYING -> {
-                // 느리게 이동
+                
                 x += velocityX * delta
                 y += velocityY * delta
 
