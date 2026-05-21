@@ -20,7 +20,7 @@ class Bullet(
 ) {
 
     // 1. 이미지 로딩: assets 폴더에 있는 "bullet.png"를 불러옵니다.
-    private val texture = Texture(Gdx.files.internal("tile.png"))
+    private val texture = Texture(Gdx.files.internal("bullet.png"))
 
     // 총알이 날아가는 속도 (초당 600 픽셀)
     private val speed = 600f
