@@ -1,4 +1,4 @@
-/*
+
 /*기존에 GameOject에있던 충돌판정 함수 open fun collidesWith(other: GameObject)
 를 이용해서 수류탄 폭발시 적이 죽도록 만들었습니다. 기존 총알 코드에서 수류탄으로 발전시켜 추가했습니다.
  */
@@ -43,7 +43,7 @@ class Grenade(
 
         when (state) {
             GrenadeState.FLYING -> {
-                
+
                 x += velocityX * delta
                 y += velocityY * delta
 
@@ -105,4 +105,4 @@ class Grenade(
         explosionTexture.dispose()
     }
 }
- */
+

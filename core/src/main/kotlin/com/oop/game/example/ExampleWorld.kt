@@ -93,6 +93,7 @@ class ExampleWorld(
 
     private val coin = Coin(worldWidth, worldHeight)
     private val bullets = mutableListOf<Bullet>()
+    private val grenades = mutableListOf<Grenade>() //!! 수류탄 리스트 추가
     private val targetCoinCount = 100
     private var coinCount = 0
 
@@ -161,6 +162,7 @@ class ExampleWorld(
 
         // ── 1) 게임 객체 갱신 — 각자 한 프레임씩 진행 ──
         fireBullet()
+        fireGrenade() //!! 수류탄 발사 함수 호출 추가
         updateAllObjects(delta)
 
         // ── 2) 충돌 감시 ──
@@ -191,6 +193,21 @@ class ExampleWorld(
         for (bullet in bulletsToRemove) {
             remove(bullet)
         }
+
+        //!! 수류탄과 적 충돌 처리 로직 추가 시작
+        val grenadesToRemove = mutableListOf<Grenade>()
+        for (grenade in grenades) {
+            for (enemy in enemies) {
+                if (grenade.collidesWith(enemy)) {
+                    enemy.takeDamage()
+                    if (!enemy.isAlive()) {
+                        enemiesToRemove.add(enemy)
+                    }
+                }
+            }
+        }
+        //!! 수류탄과 적 충돌 처리 로직 추가 끝
+
         for (enemy in enemiesToRemove) {
             remove(enemy)
         }
@@ -225,6 +242,7 @@ class ExampleWorld(
         //   bullet/enemy 가 추가될 때를 대비한 표준 흐름이다.
         removeDead()
         bullets.removeAll { !it.isAlive() }
+        grenades.removeAll { !it.isAlive() } //!! 죽은 수류탄 리스트에서 정리
         enemies.removeAll { !it.isAlive() }
     }
 
@@ -239,6 +257,21 @@ class ExampleWorld(
             )
             bullets.add(bullet)
             add(bullet)
+        }
+    }
+
+    private fun fireGrenade() { //!! 수류탄 발사 함수 추가
+        if (InputHandler.isKeyJustPressed(InputHandler.G)) { //!! G키 입력 확인
+            val grenadeX = player.x + (player.width / 2) - 8f
+            val grenadeY = player.y + player.height
+            val grenade = Grenade(
+                startX = grenadeX,
+                startY = grenadeY,
+                velocityX = 0f, //!! 위로 날아가도록 설정
+                velocityY = 300f //!! 위로 날아가는 속도
+            )
+            grenades.add(grenade) //!! 리스트에 추가
+            add(grenade) //!! 월드에 추가
         }
     }
 

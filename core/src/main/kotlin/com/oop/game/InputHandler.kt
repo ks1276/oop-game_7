@@ -53,6 +53,7 @@ object InputHandler {
     val DOWN = Input.Keys.DOWN
     val SPACE = Input.Keys.SPACE
     val ESCAPE = Input.Keys.ESCAPE
+    val G = Input.Keys.G //!! 수류탄 투척 키 추가
     val W = Input.Keys.W
     val A = Input.Keys.A
     val S = Input.Keys.S

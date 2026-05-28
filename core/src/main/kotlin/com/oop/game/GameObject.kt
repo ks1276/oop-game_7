@@ -109,9 +109,9 @@ abstract class GameObject(
      *   그래서 player.collidesWith(enemy), bullet.collidesWith(wall) 처럼
      *   어떤 조합이든 똑같은 문법으로 쓸 수 있다.
      */
-    fun collidesWith(other: GameObject): Boolean {
+    open fun collidesWith(other: GameObject): Boolean {
         return getBounds().overlaps(other.getBounds())
-    }
+    }//수류탄 폭발동작을 위해 open추가
 
     /**
      * 이 객체가 갖고 있는 GPU 자원을 정리한다 — 화면이 닫힐 때 한 번 호출된다.
