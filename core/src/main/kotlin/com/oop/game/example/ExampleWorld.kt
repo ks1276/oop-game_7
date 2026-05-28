@@ -93,7 +93,7 @@ class ExampleWorld(
 
     private val coin = Coin(worldWidth, worldHeight)
     private val bullets = mutableListOf<Bullet>()
-    private val grenades = mutableListOf<Grenade>() //!! 수류탄 리스트 추가
+    private val grenades = mutableListOf<Grenade>() //??
     private val targetCoinCount = 100
     private var coinCount = 0
 
@@ -270,7 +270,7 @@ class ExampleWorld(
                 velocityX = 0f, //!! 위로 날아가도록 설정
                 velocityY = 300f //!! 위로 날아가는 속도
             )
-            grenades.add(grenade) //!! 리스트에 추가
+            grenades.add(grenade) //?? mutableList에 index매겨서 차례대로 추가
             add(grenade) //!! 월드에 추가
         }
     }

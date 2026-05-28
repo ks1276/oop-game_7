@@ -15,7 +15,7 @@ enum class GrenadeState {
     DONE // 소멸
 }
 
-// 수류탄
+// 수류탄 비행
 class Grenade(
     startX: Float,
     startY: Float,
@@ -38,6 +38,17 @@ class Grenade(
 
     /* 수류탄 폭발을 위해서 기능함수에 살아있는 시간과 수류탄의 비행속도,
      비행시간이 끝나면 폭발상태로 바뀌는 기능, 폭발 하고 사라지는 기능 추가 */
+    // 폭발을 구현하는 함수
+    private fun triggerExplosion() {
+        state = GrenadeState.EXPLODING
+
+        /* 폭발시 수류탄 크기 키워야하는데 원점방향기준으로 커지므로 중심위치를 폭발범위 가운데로 재설정 */
+        x = x + (width / 2) - (explosionSize / 2)
+        y = y + (height / 2) - (explosionSize / 2)
+        width = explosionSize
+        height = explosionSize
+    }
+
     override fun update(delta: Float) {
         timeAlive += delta
 
@@ -53,7 +64,7 @@ class Grenade(
                 }
             }
             GrenadeState.EXPLODING -> {
-                // 폭발 유지 시간이 끝나면 소멸 상태로 전환
+                // 폭발 지속시간이 끝나면 소멸상태로
                 if (timeAlive >= fuseTime + explosionDuration) {
                     state = GrenadeState.DONE
                 }
@@ -64,21 +75,13 @@ class Grenade(
         }
     }
 
-    // 폭발을 구현하는 함수
-    private fun triggerExplosion() {
-        state = GrenadeState.EXPLODING
 
-        /* 폭발시 수류탄 크기 키워야하는데 원점방향기준으로 커지므로 중심위치를 폭발범위 가운데로 재설정 */
-        x = x + (width / 2) - (explosionSize / 2)
-        y = y + (height / 2) - (explosionSize / 2)
-        width = explosionSize
-        height = explosionSize
-    }
 
     /* 오직 폭발 중일 때만 충돌 판정이 일어나도록 조건문 걸어줌 */
     override fun collidesWith(other: GameObject): Boolean {
         if (state == GrenadeState.EXPLODING) {
-            return super.collidesWith(other)
+            return super.collidesWith(other)/*??collidesWith(other)로하면 다시
+            override collidesWith(other)로 올라가서 무한루프 반복->super.collidesWith*/
         }
         return false
     }
