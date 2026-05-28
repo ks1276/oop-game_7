@@ -36,8 +36,8 @@ class Grenade(
     private val grenadeTexture = Texture(Gdx.files.internal("grenade.png"))
     private val explosionTexture = Texture(Gdx.files.internal("explosion.png"))
 
-    /* 수류탄 폭발을 위해서 기능함수에 살아있는 시간과 수류탄의 비행속도,
-     비행시간이 끝나면 폭발상태로 바뀌는 기능, 폭발 하고 사라지는 기능 추가 */
+    /* 수류탄 폭발을 위해서 살아있는 시간과 수류탄의 비행속도,
+     비행시간이 끝나면 폭발상태(충돌범위 커짐)로 바뀌는 기능, 폭발 하고 사라지는 기능 추가 */
     // 폭발을 구현하는 함수
     private fun triggerExplosion() {
         state = GrenadeState.EXPLODING

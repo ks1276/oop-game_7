@@ -93,7 +93,7 @@ class ExampleWorld(
 
     private val coin = Coin(worldWidth, worldHeight)
     private val bullets = mutableListOf<Bullet>()
-    private val grenades = mutableListOf<Grenade>() //??
+    private val grenades = mutableListOf<Grenade>() //??화면속 스류탄 여러개 가능하므로 추가
     private val targetCoinCount = 100
     private var coinCount = 0
 
@@ -194,8 +194,13 @@ class ExampleWorld(
             remove(bullet)
         }
 
-        //!! 수류탄과 적 충돌 처리 로직 추가 시작
-        val grenadesToRemove = mutableListOf<Grenade>()
+        /*!! 수류탄과 적 충돌 처리 로직 추가 시작, 월드 속 적과 수류탄을 하나하나씩 매칭하며
+        충돌하는지 판단-중첩for문
+         */
+        /*val grenadesToRemove = mutableListOf<Grenade>()->AI가 짠코드로 필요 없는코드
+        Grenade.kt 에 Class에서 이미 수류탄이 isAlive()함수로 삭제되는 기능이 있기때문에
+        중복되므로 필요없음
+         */
         for (grenade in grenades) {
             for (enemy in enemies) {
                 if (grenade.collidesWith(enemy)) {
