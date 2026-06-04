@@ -8,41 +8,41 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.Gdx
 import com.oop.game.GameObject
-// 수류탄의 상태 enum class 로 표현
+
 enum class GrenadeState {
-    FLYING, // 날아가는 중
-    EXPLODING, // 폭발 중 (충돌 발생시)
-    DONE // 소멸
+    FLYING,
+    EXPLODING,
+    DONE
 }
 
-// 수류탄 비행
 class Grenade(
     startX: Float,
     startY: Float,
-    private val velocityX: Float, // x축 이동 속도
-    private val velocityY: Float // y축 이동 속도
-) : GameObject(startX, startY, 16f, 16f) {
+    velocityX: Float,
+    velocityY: Float
+) : Weapon(
+    x = startX,
+    y = startY,
+    width = 16f,
+    height = 16f,
+    velocityX = velocityX, // 입력받은 x 속도를 부모에게 전달
+    velocityY = velocityY  // 입력받은 y 속도를 부모에게 전달
+) {
 
-    // 수류탄 던져서 날고 있는 상태임
     private var state = GrenadeState.FLYING
 
-    // 타이머와 설정값들
     private var timeAlive = 0f
-    private val fuseTime = 1.5f  // 폭발까지 시간
-    private val explosionDuration = 0.1f // 폭발지속시간
-    private val explosionSize = 150f // 폭발 시 충돌 범위 (가로세로 150 픽셀)
+    private val fuseTime = 1.5f
+    private val explosionDuration = 0.1f
+    private val explosionSize = 150f
 
-    // 수류탄 그림과 폭발시 그림 코드
     private val grenadeTexture = Texture(Gdx.files.internal("grenade.png"))
     private val explosionTexture = Texture(Gdx.files.internal("explosion.png"))
 
-    /* 수류탄 폭발을 위해서 살아있는 시간과 수류탄의 비행속도,
-     비행시간이 끝나면 폭발상태(충돌범위 커짐)로 바뀌는 기능, 폭발 하고 사라지는 기능 추가 */
-    // 폭발을 구현하는 함수
     private fun triggerExplosion() {
         state = GrenadeState.EXPLODING
 
-        /* 폭발시 수류탄 크기 키워야하는데 원점방향기준으로 커지므로 중심위치를 폭발범위 가운데로 재설정 */
+        // 폭발 시 충돌 범위를 키우고 중심점 보정
         x = x + (width / 2) - (explosionSize / 2)
         y = y + (height / 2) - (explosionSize / 2)
         width = explosionSize
@@ -54,52 +54,43 @@ class Grenade(
 
         when (state) {
             GrenadeState.FLYING -> {
+                super.fly(delta)
 
-                x += velocityX * delta
-                y += velocityY * delta
-
-                // 1.5초 지나면 폭발
                 if (timeAlive >= fuseTime) {
                     triggerExplosion()
                 }
             }
             GrenadeState.EXPLODING -> {
-                // 폭발 지속시간이 끝나면 소멸상태로
                 if (timeAlive >= fuseTime + explosionDuration) {
                     state = GrenadeState.DONE
                 }
             }
-            GrenadeState.DONE -> {
-                // 수류탄이 사라져야하는 내용은 뒤에 isAlive함수에서 구현
-            }
+            GrenadeState.DONE -> {}
         }
     }
 
-
-
-    /* 오직 폭발 중일 때만 충돌 판정이 일어나도록 조건문 걸어줌 */
     override fun collidesWith(other: GameObject): Boolean {
         if (state == GrenadeState.EXPLODING) {
-            return super.collidesWith(other)/*??collidesWith(other)로하면 다시
-            override collidesWith(other)로 올라가서 무한루프 반복->super.collidesWith*/
+            return super.collidesWith(other)
         }
         return false
     }
 
-    /* 상태가 DONE이 되면 false를 반환하여 월드에서 삭제되도록 함 */
-    override fun isAlive(): Boolean {
+    //수류탄은 충돌하더라도 폭발 지속시간 동안 남아있어야 하므로 즉시 파괴 처리를 무시함
+    override fun markHit() {
+
+    }
+
+    //투사체 고유의 생존 조건: 상태가 DONE이 아닐 때만 살아있음
+    override fun checkAliveCondition(): Boolean {
         return state != GrenadeState.DONE
     }
 
     override fun draw(batch: SpriteBatch) {
         when (state) {
-            GrenadeState.FLYING -> {
-                batch.draw(grenadeTexture, x, y, width, height)
-            }
-            GrenadeState.EXPLODING -> {
-                batch.draw(explosionTexture, x, y, width, height)
-            }
-            GrenadeState.DONE -> {} // 사진 존재x
+            GrenadeState.FLYING -> batch.draw(grenadeTexture, x, y, width, height)
+            GrenadeState.EXPLODING -> batch.draw(explosionTexture, x, y, width, height)
+            GrenadeState.DONE -> {}
         }
     }
 
@@ -108,4 +99,3 @@ class Grenade(
         explosionTexture.dispose()
     }
 }
-
