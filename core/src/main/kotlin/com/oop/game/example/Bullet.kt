@@ -20,7 +20,7 @@ class Bullet(
     private val texture = Texture(Gdx.files.internal("bullet.png"))
 
     // 2. 총알이 날아갈 수 있는 최대 거리 설정 (원하는 수치로 조절하세요)
-    private val maxDistance = 400f
+    private val maxDistance = 500f
 
     override fun draw(batch: SpriteBatch) {
         batch.draw(texture, x, y, width, height)
