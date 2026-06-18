@@ -20,13 +20,6 @@ abstract class Weapon(
         fly(delta)
     }
 
-
-    /*AI코드
-    open fun markHit() {
-        isDestroyed = true
-    }파괴와 맞았다는 것이 같은 성질이므로 makrHit 함수 반환값을 isDestoryed로*/
-
-
     override fun isAlive(): Boolean {
         if (isDestroyed) return false
         return aliveCondition()

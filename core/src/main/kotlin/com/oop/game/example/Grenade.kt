@@ -46,7 +46,7 @@ class Grenade(
         aliveTime += delta
         when (condition) {
             GrenadeCondition.FLYING -> {
-                fly(delta)//?
+                fly(delta)
 
                 if (aliveTime >= exploseTime) explose()
             }
@@ -65,8 +65,6 @@ class Grenade(
         }
         return false
     }
-
-    //투사체 고유의 생존 조건: 상태가 DONE이 아닐 때만 살아있음
     override fun aliveCondition(): Boolean {
         return condition != GrenadeCondition.DONE
     }

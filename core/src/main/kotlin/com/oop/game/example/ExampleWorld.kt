@@ -146,8 +146,22 @@ class ExampleWorld(
 
     /** IN_PLAY 상태에서 매 프레임 처리 — 카메라 이동, 객체 갱신, 충돌 체크. */
     private fun updateInPlay(delta: Float) {
-        // ── 카메라 이동 (WASD) ──
+        // ── 카메라 이동 (WASD) ── + 카메라 플레이어 중심으로 고정시킴
         //   offsetX/Y 를 바꾸면 카메라가 월드 안에서 움직인다.
+        var targetOffsetX = player.x - (screenWidth / 2)//카메라가 화면 중앙에 오도록
+        var targetOffsetY = player.y - (screenHeight / 2)
+        if (targetOffsetX < 0) {
+            targetOffsetX = 0f
+        } else if (targetOffsetX > worldWidth - screenWidth) {
+            targetOffsetX = worldWidth - screenWidth
+        }
+        if (targetOffsetY < 0) {
+            targetOffsetY = 0f
+        } else if (targetOffsetY > worldHeight - screenHeight) {
+            targetOffsetY = worldHeight - screenHeight
+        }
+        offsetX = targetOffsetX
+        offsetY = targetOffsetY
         val cameraSpeed = 200f * delta
         if (InputHandler.isKeyPressed(InputHandler.W)) offsetY += cameraSpeed
         if (InputHandler.isKeyPressed(InputHandler.S)) offsetY -= cameraSpeed
