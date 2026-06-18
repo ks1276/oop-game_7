@@ -175,47 +175,56 @@ class ExampleWorld(
         }
 
         // 2-2) 회복 아이템과의 충돌 — hp 1씩 회복, 아이템 제거
+        // [리팩토링] 기존의 불필요한 삭제 대기열(ToRemove) 리스트들을 주석 처리합니다.
+        // 프레임 마지막의 removeDead()와 removeAll()이 자동으로 처리해 주므로 필요 없습니다.
+        /*
         val bulletsToRemove = mutableListOf<Bullet>()
         val enemiesToRemove = mutableListOf<ExampleEnemy>()
+        */
         for (bullet in bullets) {
             for (enemy in enemies) {
                 if (bullet.collidesWith(enemy)) {
-                    bullet.markHit()
+                    bullet.isDestroyed=true//!
                     enemy.takeDamage()
+                    /*
                     bulletsToRemove.add(bullet)
                     if (!enemy.isAlive()) {
                         enemiesToRemove.add(enemy)
                     }
+                    */
                     break
                 }
             }
         }
+        /*
         for (bullet in bulletsToRemove) {
             remove(bullet)
         }
+        */
 
         /*!! 수류탄과 적 충돌 처리 로직 추가 시작, 월드 속 적과 수류탄을 하나하나씩 매칭하며
         충돌하는지 판단-중첩for문
          */
-        /*val grenadesToRemove = mutableListOf<Grenade>()->AI가 짠코드로 필요 없는코드
-        Grenade.kt 에 Class에서 이미 수류탄이 isAlive()함수로 삭제되는 기능이 있기때문에
-        중복되므로 필요없음
-         */
+
         for (grenade in grenades) {
             for (enemy in enemies) {
                 if (grenade.collidesWith(enemy)) {
                     enemy.takeDamage()
+                    /*
                     if (!enemy.isAlive()) {
                         enemiesToRemove.add(enemy)
                     }
+                    */
                 }
             }
         }
         //!! 수류탄과 적 충돌 처리 로직 추가 끝
 
+        /*
         for (enemy in enemiesToRemove) {
             remove(enemy)
         }
+        */
 
         val itemsToRemove = mutableListOf<HealthItem>()
         for (item in healthItems) {

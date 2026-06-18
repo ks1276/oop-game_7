@@ -9,88 +9,73 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.Gdx
 import com.oop.game.GameObject
 
-enum class GrenadeState {
-    FLYING,
-    EXPLODING,
-    DONE
-}
+enum class GrenadeCondition { FLYING, EXPLODING, DONE }
 
 class Grenade(
-    startX: Float,
-    startY: Float,
-    velocityX: Float,
-    velocityY: Float
+    startX: Float, startY: Float,
+    velocityX: Float, velocityY: Float
 ) : Weapon(
-    x = startX,
-    y = startY,
-    width = 16f,
-    height = 16f,
-    velocityX = velocityX, // 입력받은 x 속도를 부모에게 전달
-    velocityY = velocityY  // 입력받은 y 속도를 부모에게 전달
+    x = startX, y = startY,
+    width = 16f, height = 16f,
+    velocityX = velocityX, velocityY = velocityY
 ) {
+    private var condition = GrenadeCondition.FLYING
 
-    private var state = GrenadeState.FLYING
-
-    private var timeAlive = 0f
-    private val fuseTime = 1.5f
+    private var aliveTime = 0f
+    private val exploseTime = 1.5f//??
     private val explosionDuration = 0.1f
     private val explosionSize = 150f
 
     private val grenadeTexture = Texture(Gdx.files.internal("grenade.png"))
     private val explosionTexture = Texture(Gdx.files.internal("explosion.png"))
 
-    private fun triggerExplosion() {
-        state = GrenadeState.EXPLODING
+    private fun explose() {
+        condition = GrenadeCondition.EXPLODING
 
-        // 폭발 시 충돌 범위를 키우고 중심점 보정
-        x = x + (width / 2) - (explosionSize / 2)
-        y = y + (height / 2) - (explosionSize / 2)
+        //중심위치 조정
+        var center_x = x+(width/2)
+        var center_y = y+(height/2)
         width = explosionSize
         height = explosionSize
+        x = center_x - (explosionSize/2)
+        y = center_y - (explosionSize/2)
     }
 
+
     override fun update(delta: Float) {
-        timeAlive += delta
+        aliveTime += delta
+        when (condition) {
+            GrenadeCondition.FLYING -> {
+                fly(delta)//?
 
-        when (state) {
-            GrenadeState.FLYING -> {
-                super.fly(delta)
-
-                if (timeAlive >= fuseTime) {
-                    triggerExplosion()
+                if (aliveTime >= exploseTime) explose()
+            }
+            GrenadeCondition.EXPLODING -> {
+                if (aliveTime >= exploseTime + explosionDuration) {
+                    condition = GrenadeCondition.DONE
                 }
             }
-            GrenadeState.EXPLODING -> {
-                if (timeAlive >= fuseTime + explosionDuration) {
-                    state = GrenadeState.DONE
-                }
-            }
-            GrenadeState.DONE -> {}
+            GrenadeCondition.DONE -> {}
         }
     }
 
     override fun collidesWith(other: GameObject): Boolean {
-        if (state == GrenadeState.EXPLODING) {
-            return super.collidesWith(other)
+        if (condition == GrenadeCondition.EXPLODING) {
+            return super.collidesWith(other)//무한루프때문에 부모collidesWith사용
         }
         return false
     }
 
-    //수류탄은 충돌하더라도 폭발 지속시간 동안 남아있어야 하므로 즉시 파괴 처리를 무시함
-    override fun markHit() {
-
-    }
-
     //투사체 고유의 생존 조건: 상태가 DONE이 아닐 때만 살아있음
-    override fun checkAliveCondition(): Boolean {
-        return state != GrenadeState.DONE
+    override fun aliveCondition(): Boolean {
+        return condition != GrenadeCondition.DONE
     }
 
     override fun draw(batch: SpriteBatch) {
-        when (state) {
-            GrenadeState.FLYING -> batch.draw(grenadeTexture, x, y, width, height)
-            GrenadeState.EXPLODING -> batch.draw(explosionTexture, x, y, width, height)
-            GrenadeState.DONE -> {}
+        when (condition) {
+            GrenadeCondition.FLYING -> batch.draw(grenadeTexture, x, y, width, height)
+            GrenadeCondition.EXPLODING -> batch.draw(explosionTexture, x, y, width, height)
+            GrenadeCondition.DONE -> {}
         }
     }
 

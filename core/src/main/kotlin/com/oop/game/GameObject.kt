@@ -38,14 +38,9 @@ import com.badlogic.gdx.math.Rectangle
  * @param height 세로 크기 (픽셀)
  */
 abstract class GameObject(
-    // var 로 선언한 이유: 객체는 게임 중 위치가 **변해야 하므로**.
-    //   val 로 만들면 한 번 생성된 이후 움직일 수 없다.
-    //   파이썬의 self.x = ... 와 같은 역할을 val/var 속성이 한다.
-    var x: Float,
+    var x: Float,//이동가능하기때문에 매프래임 시작위치 바뀔 수 있음
     var y: Float,
-    // 크기는 일반적으로 바뀌지 않지만, 폭발·성장 이펙트 같은 확장을 위해 var.
-    //   바뀔 일이 없다면 val 로 두는 것이 더 안전하다.
-    var width: Float,
+    var width: Float,//grenade 폭발시 크기가 커지기 때문에 var로 설정함
     var height: Float
 ) {
 
@@ -96,6 +91,7 @@ abstract class GameObject(
      * 하지만, 이 강의의 규모에서는 가독성을 더 우선한다.
      */
     fun getBounds(): Rectangle = Rectangle(x, y, width, height)
+    //객체의 영역(넓이)
 
     /**
      * 다른 객체와 충돌했는지 검사 — AABB(축 정렬 경계 상자) 방식.

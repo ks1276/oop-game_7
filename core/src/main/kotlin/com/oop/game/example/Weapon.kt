@@ -5,35 +5,31 @@ package com.oop.game.example
 import com.oop.game.GameObject
 
 abstract class Weapon(
-    x: Float,
-    y: Float,
-    width: Float,
-    height: Float,
-    protected var velocityX: Float = 0f, // x축 이동 속도 (부모가 관리)
-    protected var velocityY: Float = 0f  // y축 이동 속도 (부모가 관리)
+    x: Float, y: Float,
+    width: Float, height: Float,
+    protected val velocityX: Float, protected val velocityY: Float
 ) : GameObject(x, y, width, height) {
+    var isDestroyed: Boolean = false
 
-        protected var isDestroyed: Boolean = false
-
-        protected open fun fly(delta: Float) {
+    protected open fun fly(delta: Float) {
         x += velocityX * delta
         y += velocityY * delta
     }
 
-        override fun update(delta: Float) {
+    override fun update(delta: Float) {
         fly(delta)
     }
 
+
+    /*AI코드
     open fun markHit() {
         isDestroyed = true
-    }
+    }파괴와 맞았다는 것이 같은 성질이므로 makrHit 함수 반환값을 isDestoryed로*/
 
 
     override fun isAlive(): Boolean {
         if (isDestroyed) return false
-        return checkAliveCondition()
+        return aliveCondition()
     }
-
-    // 자식 클래스마다 다른 고유 생존 조건이므로 함수로
-    protected abstract fun checkAliveCondition(): Boolean
+    protected abstract fun aliveCondition(): Boolean
 }
