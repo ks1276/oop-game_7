@@ -94,6 +94,7 @@ class ExampleWorld(
     private val coin = Coin(worldWidth, worldHeight)
     private val bullets = mutableListOf<Bullet>()
     private val grenades = mutableListOf<Grenade>() //??화면속 스류탄 여러개 가능하므로 추가
+    private val mines = mutableListOf<Mine>()
     private val targetCoinCount = 100
     private var coinCount = 0
 
@@ -166,6 +167,7 @@ class ExampleWorld(
         // ── 1) 게임 객체 갱신 — 각자 한 프레임씩 진행 ──
         fireBullet()
         fireGrenade() //!! 수류탄 발사 함수 호출 추가
+        fireMine()
         updateAllObjects(delta)
 
         // ── 2) 충돌 감시 ──
@@ -180,55 +182,30 @@ class ExampleWorld(
         // 2-2) 회복 아이템과의 충돌 — hp 1씩 회복, 아이템 제거
         // [리팩토링] 기존의 불필요한 삭제 대기열(ToRemove) 리스트들을 주석 처리합니다.
         // 프레임 마지막의 removeDead()와 removeAll()이 자동으로 처리해 주므로 필요 없습니다.
-        /*
-        val bulletsToRemove = mutableListOf<Bullet>()
-        val enemiesToRemove = mutableListOf<ExampleEnemy>()
-        */
         for (bullet in bullets) {
             for (enemy in enemies) {
                 if (bullet.collidesWith(enemy)) {
                     bullet.isDestroyed=true//!
                     enemy.takeDamage()
-                    /*
-                    bulletsToRemove.add(bullet)
-                    if (!enemy.isAlive()) {
-                        enemiesToRemove.add(enemy)
-                    }
-                    */
                     break
                 }
             }
         }
-        /*
-        for (bullet in bulletsToRemove) {
-            remove(bullet)
-        }
-        */
-
-        /*!! 수류탄과 적 충돌 처리 로직 추가 시작, 월드 속 적과 수류탄을 하나하나씩 매칭하며
-        충돌하는지 판단-중첩for문
-         */
 
         for (grenade in grenades) {
             for (enemy in enemies) {
                 if (grenade.collidesWith(enemy)) {
                     enemy.takeDamage()
-                    /*
-                    if (!enemy.isAlive()) {
-                        enemiesToRemove.add(enemy)
-                    }
-                    */
                 }
             }
         }
-        //!! 수류탄과 적 충돌 처리 로직 추가 끝
-
-        /*
-        for (enemy in enemiesToRemove) {
-            remove(enemy)
+        for (mine in mines) {
+            for (enemy in enemies) {
+                if (mine.collidesWith(enemy)) {
+                    enemy.takeDamage()
+                }
+            }
         }
-        */
-
         val itemsToRemove = mutableListOf<HealthItem>()
         for (item in healthItems) {
             if (player.collidesWith(item)) {
@@ -260,6 +237,7 @@ class ExampleWorld(
         removeDead()
         bullets.removeAll { !it.isAlive() }
         grenades.removeAll { !it.isAlive() } //!! 죽은 수류탄 리스트에서 정리
+        mines.removeAll { !it.isAlive() }
         enemies.removeAll { !it.isAlive() }
     }
 
@@ -283,15 +261,24 @@ class ExampleWorld(
             val grenadeY = player.y + player.height
             val grenade = Grenade(
                 startX = grenadeX,
-                startY = grenadeY,
-                velocityX = 0f, //!! 위로 날아가도록 설정
-                velocityY = 300f //!! 위로 날아가는 속도
+                startY = grenadeY
             )
             grenades.add(grenade) //?? mutableList에 index매겨서 차례대로 추가
             add(grenade) //!! 월드에 추가
         }
     }
-
+    private fun fireMine() {
+        if (InputHandler.isKeyJustPressed(InputHandler.M)) { // M키를 누르면
+            val mineX = player.x + (player.width / 2) - 8f
+            val mineY = player.y // 지뢰는 플레이어 발 밑에 생성
+            val mine = Mine(
+                startX = mineX,
+                startY = mineY
+            )
+            mines.add(mine)
+            add(mine)
+        }
+    }
     /** GAME_OVER 상태에서 매 프레임 처리 — ESC 입력만 감시한다. */
     private fun updateGameOver() {
         // ESC 키가 '막 눌린 순간' 앱 종료.
