@@ -24,5 +24,6 @@ abstract class Weapon(
         if (isDestroyed) return false
         return aliveCondition()
     }
+
     protected abstract fun aliveCondition(): Boolean
 }

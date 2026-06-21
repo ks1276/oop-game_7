@@ -58,4 +58,6 @@ object InputHandler {
     val A = Input.Keys.A
     val S = Input.Keys.S
     val D = Input.Keys.D
-}
+    val M = Input.Keys.M
+    }
+

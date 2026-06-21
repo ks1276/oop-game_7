@@ -12,17 +12,16 @@ import com.oop.game.GameObject
 enum class GrenadeCondition { FLYING, EXPLODING, DONE }
 
 class Grenade(
-    startX: Float, startY: Float,
-    velocityX: Float, velocityY: Float
+    startX: Float, startY: Float
 ) : Weapon(
     x = startX, y = startY,
     width = 16f, height = 16f,
-    velocityX = velocityX, velocityY = velocityY
+    velocityX = 0f, velocityY = 300f
 ) {
     private var condition = GrenadeCondition.FLYING
 
     private var aliveTime = 0f
-    private val exploseTime = 1.5f//??
+    private val exploseTime = 1f//??
     private val explosionDuration = 0.1f
     private val explosionSize = 150f
 
