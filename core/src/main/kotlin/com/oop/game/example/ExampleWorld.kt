@@ -180,8 +180,6 @@ class ExampleWorld(
         }
 
         // 2-2) 회복 아이템과의 충돌 — hp 1씩 회복, 아이템 제거
-        // [리팩토링] 기존의 불필요한 삭제 대기열(ToRemove) 리스트들을 주석 처리합니다.
-        // 프레임 마지막의 removeDead()와 removeAll()이 자동으로 처리해 주므로 필요 없습니다.
         for (bullet in bullets) {
             for (enemy in enemies) {
                 if (bullet.collidesWith(enemy)) {
