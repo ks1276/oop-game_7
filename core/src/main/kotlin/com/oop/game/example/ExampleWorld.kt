@@ -93,8 +93,7 @@ class ExampleWorld(
 
     private val coin = Coin(worldWidth, worldHeight)
     private val bullets = mutableListOf<Bullet>()
-    private val grenades = mutableListOf<Grenade>()
-    private val mines = mutableListOf<Mine>()
+    private val grenades = mutableListOf<Grenade>() //??화면속 스류탄 여러개 가능하므로 추가
     private val targetCoinCount = 100
     private var coinCount = 0
 
@@ -151,7 +150,7 @@ class ExampleWorld(
         //   offsetX/Y 를 바꾸면 카메라가 월드 안에서 움직인다.
         offsetX = player.x - (screenWidth / 2)//카메라가 화면 중앙에 오도록
         offsetY = player.y - (screenHeight / 2)
-
+        
         val cameraSpeed = 200f * delta
         if (InputHandler.isKeyPressed(InputHandler.W)) offsetY += cameraSpeed
         if (InputHandler.isKeyPressed(InputHandler.S)) offsetY -= cameraSpeed
@@ -166,8 +165,7 @@ class ExampleWorld(
 
         // ── 1) 게임 객체 갱신 — 각자 한 프레임씩 진행 ──
         fireBullet()
-        fireGrenade()
-        fireMine()
+        fireGrenade() //!! 수류탄 발사 함수 호출 추가
         updateAllObjects(delta)
 
         // ── 2) 충돌 감시 ──
@@ -182,31 +180,54 @@ class ExampleWorld(
         // 2-2) 회복 아이템과의 충돌 — hp 1씩 회복, 아이템 제거
         // [리팩토링] 기존의 불필요한 삭제 대기열(ToRemove) 리스트들을 주석 처리합니다.
         // 프레임 마지막의 removeDead()와 removeAll()이 자동으로 처리해 주므로 필요 없습니다.
+        /*
+        val bulletsToRemove = mutableListOf<Bullet>()
+        val enemiesToRemove = mutableListOf<ExampleEnemy>()
+        */
         for (bullet in bullets) {
             for (enemy in enemies) {
                 if (bullet.collidesWith(enemy)) {
                     bullet.isDestroyed=true//!
                     enemy.takeDamage()
+                    /*
+                    bulletsToRemove.add(bullet)
+                    if (!enemy.isAlive()) {
+                        enemiesToRemove.add(enemy)
+                    }
+                    */
                     break
                 }
             }
         }
+        /*
+        for (bullet in bulletsToRemove) {
+            remove(bullet)
+        }
+        */
+
+        /*!! 수류탄과 적 충돌 처리 로직 추가 시작, 월드 속 적과 수류탄을 하나하나씩 매칭하며
+        충돌하는지 판단-중첩for문
+         */
 
         for (grenade in grenades) {
             for (enemy in enemies) {
                 if (grenade.collidesWith(enemy)) {
                     enemy.takeDamage()
+                    /*
+                    if (!enemy.isAlive()) {
+                        enemiesToRemove.add(enemy)
+                    }
+                    */
                 }
             }
         }
+        //!! 수류탄과 적 충돌 처리 로직 추가 끝
 
-        for (mine in mines) {
-            for (enemy in enemies) {
-                if (mine.collidesWith(enemy)) {
-                    enemy.takeDamage()
-                }
-            }
+        /*
+        for (enemy in enemiesToRemove) {
+            remove(enemy)
         }
+        */
 
         val itemsToRemove = mutableListOf<HealthItem>()
         for (item in healthItems) {
@@ -233,10 +254,12 @@ class ExampleWorld(
             state = GameState.GAME_OVER
         }
 
+        // ── 3) 죽은 객체 정리 ──
+        //   현재 예제에선 아무 것도 안 죽으므로 영향 없지만,
+        //   bullet/enemy 가 추가될 때를 대비한 표준 흐름이다.
         removeDead()
         bullets.removeAll { !it.isAlive() }
-        grenades.removeAll { !it.isAlive() }
-        mines.removeAll { !it.isAlive() }
+        grenades.removeAll { !it.isAlive() } //!! 죽은 수류탄 리스트에서 정리
         enemies.removeAll { !it.isAlive() }
     }
 
@@ -254,29 +277,18 @@ class ExampleWorld(
         }
     }
 
-    private fun fireGrenade() {
-        if (InputHandler.isKeyJustPressed(InputHandler.G)) {
+    private fun fireGrenade() { //!! 수류탄 발사 함수 추가
+        if (InputHandler.isKeyJustPressed(InputHandler.G)) { //!! G키 입력 확인
             val grenadeX = player.x + (player.width / 2) - 8f
             val grenadeY = player.y + player.height
             val grenade = Grenade(
                 startX = grenadeX,
-                startY = grenadeY
+                startY = grenadeY,
+                velocityX = 0f, //!! 위로 날아가도록 설정
+                velocityY = 300f //!! 위로 날아가는 속도
             )
-            grenades.add(grenade)
-            add(grenade)
-        }
-    }
-
-    private fun fireMine() {
-        if (InputHandler.isKeyJustPressed(InputHandler.M)) {
-            val mineX = player.x + (player.width / 2) - 8f
-            val mineY = player.y
-            val mine = Mine(
-                startX = mineX,
-                startY = mineY
-            )
-            mines.add(mine)
-            add(mine)
+            grenades.add(grenade) //?? mutableList에 index매겨서 차례대로 추가
+            add(grenade) //!! 월드에 추가
         }
     }
 
